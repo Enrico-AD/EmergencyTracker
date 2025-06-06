@@ -1,0 +1,94 @@
+#keytool -genkeypair -alias tomcat -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore rj.p12 -validity 3650 -storepass teste2019
+#Start - Server
+server:
+  port: 8080
+
+  servlet:
+    context-path: /emergencytracker/
+    session:
+      cookie:
+        same-site: "none"
+#End - Server
+
+# Start - Spring
+spring:
+
+  jwt:
+    secret: your-secure-base64-encoded-key-here
+    expiration: 3600000
+  cors:
+    allowed-origins:
+  main:
+    allow-circular-references: true
+
+  output:
+    ansi:
+      enabled: DETECT
+#
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/tracker
+#    username: root
+#    password: root
+#    driverClassName: com.mysql.cj.jdbc.Driver
+#    initialization-order: 1
+#    tomcat:
+#      test-on-borrow: true
+#      validation-query: SELECT 1
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:XE #XE
+    username: tracker
+    password: tracker
+    driver-class-name: oracle.jdbc.OracleDriver
+    initialization-order: 1
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      max-lifetime: 2000000
+      connection-timeout: 30000
+      pool-name: HikariPoolEmergencyTracker
+  flyway:
+    enabled: false
+    fail-on-missing-locations: false
+    locations: classpath:/db/migration
+
+
+
+  jpa:
+    show-sql: true
+    generate-ddl: true # Alterado para true
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: update # Alterado para update
+    properties:
+      hibernate:
+        format_sql: true
+
+
+--- #Start - Logging with Logback's Library
+logging:
+  file:
+    name: logs/tracker.log
+
+  pattern:
+    console: "[%d] [%-5level] [%-40.40logger{39}] : %msg%n"
+    file: "[%d] [%-5level] [%-40.40logger{39}] : %msg%n"
+
+  logback:
+    rollingpolicy:
+      file-name-pattern: "${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz"
+      max-file-size: 15MB
+      max-history: 7
+      total-size-cap: 210MB
+
+  level:
+    root: warn
+    br.com.emergency: info
+    org.springframework: error
+    org.springframework.boot.SpringApplication: info
+    org.hibernate: error
+    #org.hibernate.SQL: debug
+    #org.hibernate.type.descriptor.sql: trace
+    org.apache.tomcat: error
+... #End - Logging
+
